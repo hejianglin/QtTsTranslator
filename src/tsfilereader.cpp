@@ -1,5 +1,7 @@
+//Qt
 #include <QXmlStreamAttributes>
 
+//QtTsTranslator
 #include "tsfilereader.h"
 
 TsFileReader::TsFileReader()
@@ -7,40 +9,67 @@ TsFileReader::TsFileReader()
 
 }
 
+TsFileReader::~TsFileReader()
+{
+    if(m_fileTs.isOpen()){
+        m_fileTs.close();
+    }
+}
+
+QString TsFileReader::errorString() const
+{
+    return m_sError;
+}
+
+
 bool TsFileReader::isValidFile(const QString &sFile)
 {
     if(sFile.isEmpty() ||  !QFile::exists(sFile))
     {
-        sError = QObject::tr("file(%1) not exist").arg(sFile);
+        m_sError = QObject::tr("file(%1) not exist").arg(sFile);
         return false;
     }
 
     m_fileTs.setFileName(sFile);
     if(!m_fileTs.open(QIODevice::ReadOnly))
     {
-        sError =  QObject::tr("file(%1) open fail").arg(sFile);
+        m_sError =  QObject::tr("file(%1) open fail").arg(sFile);
         return false;
     }
 
     return true;
 }
 
-bool TsFileReader::read(const QString &sFile,ContextMap &context, QString &sError)
+bool TsFileReader::read(const QString &sFile, TsFileInfo &info)
 {
-    if(!isValidFile(sFile,sError))
+    if(!isValidFile(sFile))
     {
         return false;
     }
 
     //read
+    info.clear();
+    info.fileName = sFile;
     m_xmlReader.setDevice(&m_fileTs);
     while(m_xmlReader.readNextStartElement()){
+        if(m_xmlReader.name() == "TS"){
+            
+            readVersion(info.version);
+        }
         if(m_xmlReader.name() == "context"){
+            
             m_sReadingName.clear();
-            readContext(context);
+            readContext(info.contextMap);
         }
     }
     return true;
+}
+
+void TsFileReader::readVersion(Version &versionInfo)
+{
+    Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "TS");
+    versionInfo.setVersion(m_xmlReader.attributes().value("version").toString());
+    versionInfo.setLanguage(m_xmlReader.attributes().value("language").toString());
 }
 
 void TsFileReader::readContext(ContextMap &context)
@@ -48,8 +77,10 @@ void TsFileReader::readContext(ContextMap &context)
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "context");
     while(m_xmlReader.readNextStartElement()){
         if(m_xmlReader.name() == "name"){
+            
             readName(context);
         }else if(m_xmlReader.name() == "message"){
+            
             readMessage(context);
         }else {
             m_xmlReader.skipCurrentElement();
@@ -75,35 +106,38 @@ void TsFileReader::readMessage(ContextMap &context)
             break;
         }
         if(m_xmlReader.name() == "location"){
+            
             readLocation(item);
         }else if(m_xmlReader.name() == "source"){
+            
             readSource(item);
         }else if(m_xmlReader.name() == "translation"){
+            
             readTranslation(item);
         }else {
             m_xmlReader.skipCurrentElement();
         }
-        context[m_sReadingName]->addMessage(item);
     }
+    context[m_sReadingName]->addMessage(item);
 }
 
 void TsFileReader::readLocation(Message *item)
 {
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "location");
-    item->cLocation.sFileName = m_xmlReader.attributes().value("filename").toString();
-    item->cLocation.iLine =  m_xmlReader.attributes().value("line").toInt();
+    item->addLocation(m_xmlReader.attributes().value("line").toInt()\
+                      ,m_xmlReader.attributes().value("filename").toString());
     m_xmlReader.skipCurrentElement();
 }
 
 void TsFileReader::readSource(Message *item)
 {
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "source");
-    item->sSource = m_xmlReader.readElementText();
+    item->setSource(m_xmlReader.readElementText());
 }
 
 void TsFileReader::readTranslation(Message *item)
 {
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "translation");
-    item->sTranslation = m_xmlReader.readElementText();
+    item->setTranslation(m_xmlReader.readElementText());
 }
 

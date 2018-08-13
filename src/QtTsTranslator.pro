@@ -27,13 +27,34 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     tsfilereader.cpp \
     tsfilewriter.cpp \
-    translator.cpp
+    tsfileinfo.cpp \
+    translationcontroller.cpp \
+    tsfiletranslator.cpp \
+    translationconfig.cpp \
+    xmlsyntaxhighlighter.cpp \
+    tsfileviewer.cpp \
+    translationconfigdialog.cpp \
+    codeeditor.cpp
 
 HEADERS  += mainwindow.h \
     tstranslator_global.h \
     tsfilereader.h \
     tsfilewriter.h \
-    taskqueue.h \
-    translator.h
+    tsfileinfo.h \
+    translationcontroller.h \
+    tsfiletranslator.h \
+    translationconfig.h \
+    xmlsyntaxhighlighter.h \
+    tsfileviewer.h \
+    translationconfigdialog.h \
+    codeeditor.h
+
+# QNetworkTranslator
+INCLUDEPATH += ../../QNetworkTranslator/src/
+include(../../QNetworkTranslator/src/networktranslator.pri)
 
 TRANSLATIONS += qt_$${TARGET}_zh.ts
+
+RESOURCES += resource/resource.qrc
+
+DISTFILES +=

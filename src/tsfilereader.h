@@ -6,28 +6,25 @@
 #include <QXmlStreamReader>
 
 //QtTsFileTranslator
-#include "tstranslator_global.h"
+#include "tsfileinfo.h"
 
 class TsFileReader
 {
 public:
-    TsFileReader(const QString file = "");
-
-    bool setFile(const QString &file);
-
-    bool read(TsInfo &info,ContextMap &Context);
-    bool read(const QString &sFile,TsInfo &info,ContextMap &Context);
-
+    TsFileReader();
+    ~TsFileReader();
+    bool read(const QString &sFile,TsFileInfo &);
     QString errorString() const;
 
 private:
     QFile m_fileTs;
     QString m_sReadingName;
+    QString m_sError;
     QXmlStreamReader m_xmlReader;
 
     bool isValidFile(const QString &sFile);
 
-    void readTsInfo(TsInfo &info);
+    void readVersion(Version &version);
     void readContext(ContextMap &context);
     void readName(ContextMap &context);
     void readMessage(ContextMap &context);

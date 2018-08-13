@@ -33,3 +33,6 @@
 
 # Qt
 *.user
+
+# System
+*.DS_Store
