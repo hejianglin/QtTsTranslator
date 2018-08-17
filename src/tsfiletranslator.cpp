@@ -14,7 +14,7 @@ TsFileTranslator::TsFileTranslator(QObject *parent)
 
 TsFileTranslator::~TsFileTranslator()
 {
-//    qDebug()<<Q_FUNC_INFO;
+    //    qDebug()<<Q_FUNC_INFO;
 }
 
 void TsFileTranslator::setTranslatorClient(TranslationClient client)
@@ -95,10 +95,8 @@ bool TsFileTranslator::translate()
     //init task list
     m_listMessage.clear();
     m_listMessage_Requesting.clear();
-    ContextMapIterator it(m_cTsFileInfoPoint->contextMap);
-    while(it.hasNext()){
-        it.next();
-        m_listMessage.append(it.value()->messageList());
+    foreach(Context *item,m_cTsFileInfoPoint->contextMap.context()){
+        m_listMessage.append(item->messageList());
     }
     m_iTotolMessage = m_listMessage.count();
 

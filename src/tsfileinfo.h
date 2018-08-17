@@ -210,27 +210,39 @@ private:
     QList<Message *> m_lMessage;
 };
 
+typedef QList<Context *> ContextList;
+class ContextMap
+{
+private:
+    qint16 m_iIndex;
+    QHash<QString,quint16> m_hashName;//<name,index>
+    QList<Context *> m_listContext;
+
+public:
+    ContextMap();
+    ~ContextMap();
+
+    bool isEmpty() const;
+    bool isExists(const QString &name) const;
+
+    Context *operator [](const QString &name);
+
+    void clear();
+    void append(const QString &,Context *);
+
+    ContextList context() const;
+};
+
 ///////////////////////////////////////
 /// \brief The TsFileInfo class
 /// whole ts file
-typedef QList<Context *> ContextList;
-typedef QHash<QString,Context *> ContextMap;
-typedef QHashIterator<QString,Context *> ContextMapIterator;
 class TsFileInfo
 {
 public:    
     void clear()
     {
         fileName.clear();
-
         version = Version();
-
-        ContextMapIterator it(contextMap);
-        while(it.hasNext()){
-            it.next();
-            delete it.value();
-        }
-
         contextMap.clear();
     }
 

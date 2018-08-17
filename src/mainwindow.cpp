@@ -143,9 +143,9 @@ void MainWindow::slotOpenFile()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Ts File"),
                                                     QDir::homePath(),
-                                                    tr("Qt Ts File (*.ts)"));
+                                                    QString("Qt Ts File (*.ts)"));
 
-    if(fileName.isEmpty()){
+    if(fileName.simplified().isEmpty()){
         return ;
     }
 

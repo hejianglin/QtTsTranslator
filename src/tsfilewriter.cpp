@@ -46,12 +46,10 @@ bool TsFileWriter::write(const QString &file, TsFileInfo &info,bool overwrite)
 
 void TsFileWriter::writeContext(const ContextMap &contextMap)
 {
-    ContextMapIterator it(contextMap);
-    while(it.hasNext()){
-        it.next();
+    foreach(Context *item,contextMap.context()){
         m_cXmlWriter.writeStartElement("context");
-        m_cXmlWriter.writeTextElement("name",it.key());
-        writeMessage(it.value()->messageList());
+        m_cXmlWriter.writeTextElement("name",item->name());
+        writeMessage(item->messageList());
         m_cXmlWriter.writeEndElement();
     }
 }

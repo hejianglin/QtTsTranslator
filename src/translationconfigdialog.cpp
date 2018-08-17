@@ -22,6 +22,7 @@ void TranslationConfigDialog::initGui()
     initFile();
     initTool();
     setMainLayout();
+    setWindowFlags(Qt::Dialog | Qt::WindowCloseButtonHint);
 }
 
 void TranslationConfigDialog::initClient()

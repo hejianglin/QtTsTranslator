@@ -21,7 +21,6 @@ QString TsFileReader::errorString() const
     return m_sError;
 }
 
-
 bool TsFileReader::isValidFile(const QString &sFile)
 {
     if(sFile.isEmpty() ||  !QFile::exists(sFile))
@@ -36,7 +35,6 @@ bool TsFileReader::isValidFile(const QString &sFile)
         m_sError =  QObject::tr("file(%1) open fail").arg(sFile);
         return false;
     }
-
     return true;
 }
 
@@ -53,11 +51,9 @@ bool TsFileReader::read(const QString &sFile, TsFileInfo &info)
     m_xmlReader.setDevice(&m_fileTs);
     while(m_xmlReader.readNextStartElement()){
         if(m_xmlReader.name() == "TS"){
-            
             readVersion(info.version);
         }
         if(m_xmlReader.name() == "context"){
-            
             m_sReadingName.clear();
             readContext(info.contextMap);
         }
@@ -77,10 +73,8 @@ void TsFileReader::readContext(ContextMap &context)
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "context");
     while(m_xmlReader.readNextStartElement()){
         if(m_xmlReader.name() == "name"){
-            
             readName(context);
         }else if(m_xmlReader.name() == "message"){
-            
             readMessage(context);
         }else {
             m_xmlReader.skipCurrentElement();
@@ -92,7 +86,7 @@ void TsFileReader::readName(ContextMap &context)
 {
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "name");
     m_sReadingName = m_xmlReader.readElementText();
-    context.insert(m_sReadingName,new Context(m_sReadingName));
+    context.append(m_sReadingName,new Context(m_sReadingName));
 }
 
 void TsFileReader::readMessage(ContextMap &context)
@@ -100,19 +94,16 @@ void TsFileReader::readMessage(ContextMap &context)
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "message");
     Message *item = new Message;
     while(m_xmlReader.readNextStartElement()){
-        if(m_sReadingName.isEmpty() || !context.value(m_sReadingName)){
+        if(m_sReadingName.isEmpty() || !context.isExists(m_sReadingName)){
             delete item;
             m_xmlReader.raiseError(QObject::tr("file format error!"));
             break;
         }
         if(m_xmlReader.name() == "location"){
-            
             readLocation(item);
         }else if(m_xmlReader.name() == "source"){
-            
             readSource(item);
         }else if(m_xmlReader.name() == "translation"){
-            
             readTranslation(item);
         }else {
             m_xmlReader.skipCurrentElement();
