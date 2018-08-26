@@ -240,11 +240,9 @@ void MainWindow::slotTranslationFinished()
 void MainWindow::slotTranslationProgress(qreal progress)
 {
     if(progress >= 1){
-         DEBUG(QString::number(progress));
         m_lblTips->setText(tr("Translation finished"));
         m_lblProgress->setText("");
     }else{
-        DEBUG(QString::number(progress));
         m_lblTips->setText(tr("Translating..."));
         m_lblProgress->setText(QString::number(progress * 100,'f',2) + QString("%"));
     }
