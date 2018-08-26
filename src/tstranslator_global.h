@@ -23,7 +23,7 @@ enum LogType
 #if 1
 #include <QDebug>
 #include <QtGlobal>
-#define DEBUG(x) do{qDebug()<<Q_FUNCTION_INFO<<" ["<<__LINE__<<"] "<<x;}while(0);
+#define DEBUG(x) do{qDebug()<<__FILE__<<__FUNCTION__ <<"["<<__LINE__<<"]"<<x;}while(0);
 #else
 #define DEBUG(x) do{}while(0);
 #endif

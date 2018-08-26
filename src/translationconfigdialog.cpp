@@ -1,5 +1,7 @@
 //Qt
 #include <QMessageBox>
+#include <QApplication>
+#include <QDesktopWidget>
 
 //QtTsTranslator
 #include "translationconfig.h"
@@ -164,6 +166,9 @@ void TranslationConfigDialog::showEvent(QShowEvent *)
 
     //load config
     loadConfig();
+
+    this->move((QApplication::desktop()->width() - this->width())/2,
+                 (QApplication::desktop()->height() - this->height())/2);
 }
 
 
@@ -219,12 +224,12 @@ bool TranslationConfigDialog::isValid()
 {
     //client
     if(m_edtAppID->text().isEmpty()){
-        m_sError = tr("appid unset");
+        m_sError = tr("appid is not set");
         return false;
     }
 
     if(m_edtAppKey->text().isEmpty()){
-        m_sError = tr("appkey unset");
+        m_sError = tr("appkey is not set");
         return false;
     }
 
@@ -236,7 +241,7 @@ bool TranslationConfigDialog::isValid()
 
     //file
     if(m_rboxNewFile->isChecked() && m_edtNewFileSuffix->text().isEmpty()){
-        m_sError = tr("new file suffix unset");
+        m_sError = tr("new file suffix is not set");
         return false;
     }
 

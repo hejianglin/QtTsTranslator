@@ -155,31 +155,31 @@ bool TranslationConfig::isValid()
 {
     if(m_eTranslatorClient <= TranslationClient_eNone)
     {
-        m_sError = QObject::tr("translator clinet unset");
+        m_sError = QObject::tr("translator clinet is not set");
         return false;
     }
 
     if(m_eSourceLanguage < LanguageType_eAuto)
     {
-        m_sError = QObject::tr("source language unset");
+        m_sError = QObject::tr("source language is not set");
         return false;
     }
 
     if(m_eTargetLanguage <= LanguageType_eAuto)
     {
-        m_sError = QObject::tr("target language unset");
+        m_sError = QObject::tr("target language is not set");
         return false;
     }
 
     if(m_sAppID.isEmpty())
     {
-        m_sError = QObject::tr("appid unset");
+        m_sError = QObject::tr("appid is not set");
         return false;
     }
 
     if(m_sAppKey.isEmpty())
     {
-        m_sError =  QObject::tr("appkey  unset");
+        m_sError =  QObject::tr("appkey  is not set");
         return false;
     }
     return true;

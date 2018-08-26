@@ -75,13 +75,11 @@ void TsFileViewer::initGui()
 void TsFileViewer::setSourceFile(const QString &file)
 {
     m_sSourceFile = file;
-    //m_lblSourceFile->setText(file);
 }
 
 void TsFileViewer::setTargetFile(const QString &file)
 {
     m_sTargetFile = file;
-    //m_lblTargetFile->setText(file);
 }
 
 void TsFileViewer::showEvent(QShowEvent *)
@@ -127,26 +125,39 @@ void TsFileViewer::slotScrollBarValueChange(int value)
 
 void TsFileViewer::slotSave()
 {
-    return saveTargetToFile(m_sTargetFile);
+    QString sError;
+    if(!saveTargetToFile(m_sTargetFile,sError)){
+        QMessageBox::critical(this,tr("Error"),sError);
+    }else{
+        QMessageBox::information(this,tr("Success"),tr("save to file(%1) success!").arg(m_sTargetFile));
+    }
+    return ;
 }
 
 void TsFileViewer::slotReplace()
 {
-    return saveTargetToFile(m_sSourceFile);
+    QString sError;
+    if(!saveTargetToFile(m_sSourceFile,sError)){
+        QMessageBox::critical(this,tr("Error"),sError);
+    }else{
+        QFile::remove(m_sTargetFile);
+        QMessageBox::information(this,tr("Success"),tr("save to file(%1) success!").arg(m_sSourceFile));
+        updateViewer();
+    }
+   return ;
 }
 
-void TsFileViewer::saveTargetToFile(const QString &filepath)
+bool TsFileViewer::saveTargetToFile(const QString &filepath,QString &error)
 {
     QFile file(filepath);
     if(!file.open(QFile::WriteOnly)){
-        QMessageBox::critical(this,tr("Error"),tr("open file(%1) error:%2!")
-                              .arg(filepath).arg(file.errorString()));
-        return ;
+        error = tr("open file(%1) error:%2").arg(filepath).arg(file.errorString());
+        return false;
     }
 
     file.write(m_txtEditTarget->toPlainText().toUtf8());
     file.close();
-    QMessageBox::information(this,tr("Success"),tr("save to file(%1) success!").arg(filepath));
+    return true;
 }
 
 void TsFileViewer::updateViewer()

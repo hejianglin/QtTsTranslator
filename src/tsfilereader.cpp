@@ -3,6 +3,7 @@
 
 //QtTsTranslator
 #include "tsfilereader.h"
+#include "tstranslator_global.h"
 
 TsFileReader::TsFileReader()
 {
@@ -23,7 +24,7 @@ QString TsFileReader::errorString() const
 
 bool TsFileReader::isValidFile(const QString &sFile)
 {
-    if(sFile.isEmpty() ||  !QFile::exists(sFile))
+    if(sFile.isEmpty() || !QFile::exists(sFile))
     {
         m_sError = QObject::tr("file(%1) not exist").arg(sFile);
         return false;

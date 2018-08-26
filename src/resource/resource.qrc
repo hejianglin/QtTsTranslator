@@ -4,5 +4,6 @@
         <file>image/pause.png</file>
         <file>image/file.png</file>
         <file>image/dir.png</file>
+        <file>image/logo.png</file>
     </qresource>
 </RCC>

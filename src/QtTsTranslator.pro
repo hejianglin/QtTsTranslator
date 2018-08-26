@@ -53,7 +53,7 @@ HEADERS  += mainwindow.h \
 INCLUDEPATH += ../../QNetworkTranslator/src/
 include(../../QNetworkTranslator/src/networktranslator.pri)
 
-TRANSLATIONS += qt_$${TARGET}_zh.ts
+TRANSLATIONS += language/qt_$${TARGET}_zh_CN.ts
 
 RESOURCES += resource/resource.qrc
 

@@ -28,7 +28,6 @@ public:
     QString targetFile() const;
 
     void updateViewer();
-    void updateTargetViewer();
 
 protected:
     void showEvent( QShowEvent *);
@@ -72,7 +71,7 @@ private:
     //Function
     void initGui();
 
-    void saveTargetToFile(const QString &file);
+    bool saveTargetToFile(const QString &file,QString &error);
 };
 
 #endif // TSFILEVIEWER_H

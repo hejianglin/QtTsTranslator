@@ -47,6 +47,7 @@ void MainWindow::initGui()
     initMenuBar();
     initToolBar();
     initFileViewer();
+    this->setWindowIcon(QIcon("://image/logo.png"));
     resize(800,600);
 }
 
@@ -75,7 +76,7 @@ void MainWindow::initMenuBar()
     QMenuBar *menuBar = new QMenuBar(0);
 
     //file
-    QMenu *menuFile = menuBar->addMenu(tr("File(&F)"));
+    QMenu *menuFile = menuBar->addMenu(tr("File"));
     m_actOpenFile = menuFile->addAction(QIcon("://image/file.png"),tr("Open File"),
                                         this,SLOT(slotOpenFile()));
     m_actOpenFile->setStatusTip(tr("Open Qt translation file"));
@@ -94,7 +95,7 @@ void MainWindow::initMenuBar()
 
 
     //help
-    QMenu *menuHelp = menuBar->addMenu(tr("Help(&H)"));
+    QMenu *menuHelp = menuBar->addMenu(tr("Help"));
     menuHelp->addAction(tr("About"),this,SLOT(slotAbout()));
 
     this->setMenuBar(menuBar);
@@ -109,7 +110,7 @@ void MainWindow::initToolBar()
 
     //start
     m_actStart = toolBar_Progress->addAction(QIcon("://image/start.png"),
-                                             tr("&Start"),this,SLOT(slotStart()));
+                                             tr("Start"),this,SLOT(slotStart()));
     m_actStart->setEnabled(false);
     m_actStart->setStatusTip(tr("Start translation"));
 
@@ -191,10 +192,19 @@ void MainWindow::slotAbout()
     QDialog *dialogAbout = new QDialog(this);
     dialogAbout->setAttribute(Qt::WA_DeleteOnClose);
     QLabel *lblAboutIcon = new QLabel(dialogAbout);
+    lblAboutIcon->setPixmap(QPixmap("://image/logo.png"));
+    lblAboutIcon->setAlignment(Qt::AlignCenter);
+
+    QLabel *lblDebugText = new QLabel(dialogAbout);
+    lblDebugText->setText(tr("bug report: he.jianglin@foxmail.com"));
+    lblDebugText->setAlignment(Qt::AlignCenter);
+
     QLabel *lblAboutText = new QLabel(dialogAbout);
     lblAboutText->setText(tr("QtTsFileTranslator is used to help you translate Qt ts file."));
+    lblAboutText->setAlignment(Qt::AlignCenter);
     QVBoxLayout *layoutAboutDialog = new QVBoxLayout(dialogAbout);
     layoutAboutDialog->addWidget(lblAboutIcon);
+    layoutAboutDialog->addWidget(lblDebugText);
     layoutAboutDialog->addWidget(lblAboutText);
     dialogAbout->setLayout(layoutAboutDialog);
     dialogAbout->exec();
@@ -230,9 +240,11 @@ void MainWindow::slotTranslationFinished()
 void MainWindow::slotTranslationProgress(qreal progress)
 {
     if(progress >= 1){
+         DEBUG(QString::number(progress));
         m_lblTips->setText(tr("Translation finished"));
         m_lblProgress->setText("");
     }else{
+        DEBUG(QString::number(progress));
         m_lblTips->setText(tr("Translating..."));
         m_lblProgress->setText(QString::number(progress * 100,'f',2) + QString("%"));
     }

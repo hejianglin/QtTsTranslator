@@ -75,6 +75,11 @@ bool ContextMap::isExists(const QString &name) const
 
 Context *ContextMap::operator [](const QString &name)
 {
+    return value(name);
+}
+
+Context *ContextMap::value(const QString &name)
+{
     return m_listContext.value(m_hashName.value(name));
 }
 

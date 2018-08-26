@@ -168,7 +168,7 @@ void TranslationController::updateProgress()
 
     qreal progress = 0;
     if(totalMessage > 0){
-        progress = finishedMessage / totalMessage;
+        progress = finishedMessage * 1.0 / totalMessage;
     }
 
     emit translationProgress(progress);

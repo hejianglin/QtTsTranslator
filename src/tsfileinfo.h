@@ -215,7 +215,7 @@ class ContextMap
 {
 private:
     qint16 m_iIndex;
-    QHash<QString,quint16> m_hashName;//<name,index>
+    QHash<QString,int> m_hashName;//<name,index>
     QList<Context *> m_listContext;
 
 public:
@@ -225,6 +225,7 @@ public:
     bool isEmpty() const;
     bool isExists(const QString &name) const;
 
+    Context *value(const QString &name);
     Context *operator [](const QString &name);
 
     void clear();

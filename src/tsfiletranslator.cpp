@@ -1,7 +1,5 @@
 #include "tsfiletranslator.h"
 
-#include <QDebug>
-
 TsFileTranslator::TsFileTranslator(QObject *parent)
     : QObject(parent)
     , m_iTotolMessage(0)
@@ -68,7 +66,7 @@ bool TsFileTranslator::isValid()
     m_sError.clear();
 
     if(m_cTsFileInfoPoint == Q_NULLPTR){
-        m_sError = tr("ts file info unset");
+        m_sError = tr("ts file info is not set");
         return false;
     }
 
@@ -98,7 +96,7 @@ bool TsFileTranslator::translate()
     foreach(Context *item,m_cTsFileInfoPoint->contextMap.context()){
         m_listMessage.append(item->messageList());
     }
-    m_iTotolMessage = m_listMessage.count();
+    m_iTotolMessage = static_cast<quint32>(m_listMessage.count());
 
     //translate
     translate_impl(CONCURRENT_TRANSLATION_MESSAGE_MAX);
@@ -142,7 +140,6 @@ void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply
     //remove the message
     m_listMessage_Requesting.removeOne(message);
 
-
     if(reply.error() != NetworkTranslatorReply::TranslationError_eNone){
 
         qint8 failCount = m_hashFailRecord.value(message,0) + 1;
@@ -163,13 +160,9 @@ void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply
                                 tr("translation task will be cast away") \
                               : tr("translation task will be retried")));
     }else{
-
         message->setTranslation(reply.target());
-
         m_hashFailRecord.remove(message);
-
         updateProgress();
-
         emit sigAddLog(tr("translate (%1) success!").arg(reply.source()));
     }
 
@@ -188,5 +181,3 @@ void TsFileTranslator::updateProgress()
         emit finished();
     }
 }
-
-
