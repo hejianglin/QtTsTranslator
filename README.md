@@ -1,8 +1,8 @@
 ## QtTsTranslation
 QtTsTranslation 用于帮助 Qt 开发者翻译 Qt [翻译文件](http://doc.qt.io/qt-5/linguist-manager.html),其中翻译工作通过网络接口实现,目前支持:
 - [x] 百度
-- [] 搜狗
-- [] 腾讯
+- [ ] 搜狗
+- [ ] 腾讯
 
 ## Build
 ``` shell
