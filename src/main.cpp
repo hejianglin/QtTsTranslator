@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
     //application translation
     QTranslator translator;
     QString sTranslationFile = QApplication::applicationDirPath() + "/language/qt_"
-            + a.applicationName() + locale + ".qm";
+            + a.applicationName() + "_" +locale + ".qm";
+    DEBUG(sTranslationFile);
     translator.load(sTranslationFile);
     a.installTranslator(&translator);
 

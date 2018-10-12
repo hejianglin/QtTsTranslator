@@ -13,23 +13,29 @@
 #include <QMenuBar>
 
 #include <QFile>
+#include <QDateTime>
 #include <QCoreApplication>
 
 //QtTsTranslator
 #include "mainwindow.h"
+#include "tstranslatorutils.h"
 #include "translationconfigdialog.h"
 
 USE_NETWORKTRANSLATOR_NAMESPACE
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_proDlgWaiting(Q_NULLPTR)
     , m_cTranslationController(new TranslationController(this))
 {
+    m_sLogDir = QCoreApplication::applicationDirPath() + "/log/";
 
+    connect(m_cTranslationController,SIGNAL(addLog(QString,LogType)),
+            this,SLOT(slotAddLog(QString,LogType)));
     connect(m_cTranslationController,SIGNAL(translationProgress(qreal))
             ,this,SLOT(slotTranslationProgress(qreal)));
-    connect(m_cTranslationController,SIGNAL(finished(QString,bool))
-            ,this,SLOT(slotTranslationFinished(QString,bool)));
+    connect(m_cTranslationController,SIGNAL(finishedAFile(QString,bool))
+            ,this,SLOT(slotTranslationAFileFinished(QString,bool)));
     connect(m_cTranslationController,SIGNAL(finished()),
             this,SLOT(slotTranslationFinished()));
 
@@ -85,14 +91,14 @@ void MainWindow::initMenuBar()
                                        this,SLOT(slotOpenDir()));
     m_actOpenDir->setStatusTip(tr("Open include Qt translation file dir"));
     m_actOpenDir->setEnabled(false);
+    m_actOpenDir->setVisible(false);
 
     menuFile->addSeparator();
-    menuFile->addAction(tr("Quit(&Q)"),this,SLOT(close()));
+    menuFile->addAction(tr("Quit"),this,SLOT(close()));
 
     //tool
     QMenu *menuTool = menuBar->addMenu(tr("Tool"));
-    menuTool->addAction(tr("Settings"),this,SLOT(slotSettings()));
-
+    m_actSettings =  menuTool->addAction(tr("Settings"),this,SLOT(slotSettings()));
 
     //help
     QMenu *menuHelp = menuBar->addMenu(tr("Help"));
@@ -142,6 +148,7 @@ void MainWindow::initFileViewer()
 
 void MainWindow::slotOpenFile()
 {
+    //too slow...
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Ts File"),
                                                     QDir::homePath(),
                                                     QString("Qt Ts File (*.ts)"));
@@ -150,12 +157,15 @@ void MainWindow::slotOpenFile()
         return ;
     }
 
-    m_actStart->setEnabled(true);
+    enterBusyMode();
+
+    //刷新
     m_slSourceFile.clear();
     m_slSourceFile.append(fileName);
-
     updateTargetFileList();
     updateFileViewer();
+
+    quitBusyMode();
 }
 
 void MainWindow::slotOpenDir()
@@ -225,6 +235,7 @@ void MainWindow::slotStart()
         QMessageBox::critical(this,tr("Translation Error"),m_cTranslationController->errorString());
         return ;
     }
+    enterBusyMode();
 }
 
 void MainWindow::slotPause()
@@ -235,6 +246,8 @@ void MainWindow::slotPause()
 void MainWindow::slotTranslationFinished()
 {
     m_lblTips->setText(tr("Ready"));
+    m_lblProgress->setText(tr(""));
+    quitBusyMode();
 }
 
 void MainWindow::slotTranslationProgress(qreal progress)
@@ -248,9 +261,69 @@ void MainWindow::slotTranslationProgress(qreal progress)
     }
 }
 
-void MainWindow::slotTranslationFinished(const QString &,bool suc)
+void MainWindow::slotTranslationAFileFinished(const QString &,bool suc)
 {
     if(m_slSourceFile.count() == 1 && suc){
         m_cTsFileViewer->updateViewer();
     }
+}
+
+void MainWindow::enterBusyMode()
+{
+    m_actOpenFile->setEnabled(false);
+    m_actStart->setEnabled(false);
+    m_actSettings->setEnabled(false);
+
+    m_proDlgWaiting = new QProgressDialog(this);
+    m_proDlgWaiting->setLabelText(tr("please waiting..."));
+    m_proDlgWaiting->setMinimumDuration(0);
+    m_proDlgWaiting->setCancelButton(0);
+    m_proDlgWaiting->setWindowTitle(tr("waiting..."));
+    m_proDlgWaiting->setModal(true);
+    m_proDlgWaiting->show();
+
+    this->setCursor(Qt::WaitCursor);
+    this->repaint();
+
+    TsTranslatorUtils::delay(300);
+}
+
+void MainWindow::quitBusyMode()
+{
+    m_actOpenFile->setEnabled(true);
+    m_actStart->setEnabled(true);
+    m_actSettings->setEnabled(true);
+
+    m_proDlgWaiting->deleteLater();
+    m_proDlgWaiting = 0;
+
+    this->setCursor(Qt::ArrowCursor);
+    this->repaint();
+}
+
+void MainWindow::slotAddLog(const QString &log, LogType type)
+{
+    if(log.isEmpty()){
+        return ;
+    }
+
+    QDir logDir(m_sLogDir);
+    if(!logDir.exists()){
+        logDir.mkpath(m_sLogDir);
+    }
+
+    static QStringList slLogType = QStringList()<<"DEBUG"<<"INFO"<<"WARNING"<<"ERROR";
+    QString sLogFile = m_sLogDir + QDateTime::currentDateTime().toString("yyyyMMdd") + ".log";
+    QFile logFile(sLogFile);
+    if(!logFile.open(QFile::Append)){
+        return ;
+    }
+
+    QString sLog = QString("[%1][%2]%3\r\n")
+            .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(slLogType.value(static_cast<int>(type)))
+            .arg(log);
+
+    logFile.write(sLog.toStdString().c_str());
+    logFile.close();
 }

@@ -123,21 +123,21 @@ typedef QList<Location> LocationList;
 class Message
 {
 public:
-    Message()
+    enum Type
     {
+        Type_eUnfinished,
+        Type_eFinished
+    };
 
-    }
-
-    Message(const QString &source,QString translation = "",LocationList locationList= LocationList())
-        : m_locationList(locationList)
-        , m_sSource(source)
-        , m_sTranslation(translation)
+    Message()
+        : m_eType(Type_eUnfinished)
     {
 
     }
 
     Message(const Message &other)
     {
+        this->m_eType = other.m_eType;
         this->m_locationList = other.m_locationList;
         this->m_sSource = other.m_sSource;
         this->m_sTranslation = other.m_sTranslation;
@@ -146,11 +146,22 @@ public:
     Message & operator = (const Message &other)
     {
         if(this != &other){
+            this->m_eType = other.m_eType;
             this->m_locationList = other.m_locationList;
             this->m_sSource = other.m_sSource;
             this->m_sTranslation = other.m_sTranslation;
         }
         return *this;
+    }
+
+    inline void setType(Type type)
+    {
+        m_eType = type;
+    }
+
+    inline Type type() const
+    {
+        return m_eType;
     }
 
     inline void addLocation(qint32 line,const QString &filename)
@@ -184,6 +195,7 @@ public:
     }
 
 private:
+    Type m_eType;
     LocationList m_locationList;
     QString m_sSource;
     QString m_sTranslation;
@@ -204,6 +216,7 @@ public:
 
     void addMessage(Message *message);
     MessageList messageList() const;
+    MessageList unfinishedMessageList() const;
 
 private:
     QString m_sName;

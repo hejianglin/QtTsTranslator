@@ -130,6 +130,8 @@ void TsFileReader::readSource(Message *item)
 void TsFileReader::readTranslation(Message *item)
 {
     Q_ASSERT(m_xmlReader.isStartElement() && m_xmlReader.name() == "translation");
+    item->setType(m_xmlReader.attributes().value("type").toString() == "unfinished" ?
+                      Message::Type_eUnfinished : Message::Type_eFinished);
     item->setTranslation(m_xmlReader.readElementText());
 }
 

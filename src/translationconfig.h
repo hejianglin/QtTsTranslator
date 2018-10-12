@@ -30,8 +30,8 @@ public:
     bool isValid();
     QString errorString() const;
 
-    void setTranslatorClient(TranslationClient client);
-    TranslationClient translatorClient() const;
+    void setTranslatorEngine(TranslationEngine engine);
+    TranslationEngine translatorEngine() const;
 
     void setAppID(const QString &appid);
     QString appID() const;
@@ -50,11 +50,15 @@ public:
     void setNewFileSuffix(const QString &);
     QString newFileSuffix() const;
 
-    static QStringList availableTranslationClientList();
+    void setRetranslationFinishedMessage(bool b);
+    bool retranslationFinishedMessage() const;
+
+    static QStringList availableTranslationEngineList();
     static QStringList availableTranslationLanguageList();
 
 private:
-    TranslationClient m_eTranslatorClient;
+    bool m_bRetranslationFinishedMessage;
+    TranslationEngine m_eTranslatorEngine;
     LanguageType m_eSourceLanguage;
     LanguageType m_eTargetLanguage;
     HandleFileMode m_eHandleFileMode;

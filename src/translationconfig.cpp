@@ -8,7 +8,8 @@
 #include "translationconfig.h"
 
 TranslationConfig::TranslationConfig()
-    : m_eTranslatorClient(TranslationClient_eNone)
+    : m_bRetranslationFinishedMessage(false)
+    , m_eTranslatorEngine(TranslationEngine_eNone)
     , m_eSourceLanguage(LanguageType_eAuto)
     , m_eTargetLanguage(LanguageType_eNone)
     , m_eHandleFileMode(HandleFileMode_eNew)
@@ -20,7 +21,8 @@ TranslationConfig::TranslationConfig()
 
 TranslationConfig::TranslationConfig(const TranslationConfig &other)
 {
-    this->m_eTranslatorClient = other.m_eTranslatorClient;
+    this->m_bRetranslationFinishedMessage = other.m_bRetranslationFinishedMessage;
+    this->m_eTranslatorEngine = other.m_eTranslatorEngine;
     this->m_eSourceLanguage = other.m_eSourceLanguage;
     this->m_eTargetLanguage = other.m_eTargetLanguage;
     this->m_eHandleFileMode = other.m_eHandleFileMode;
@@ -32,7 +34,8 @@ TranslationConfig::TranslationConfig(const TranslationConfig &other)
 TranslationConfig & TranslationConfig::operator =(const TranslationConfig &other)
 {
     if(this != &other){
-        this->m_eTranslatorClient = other.m_eTranslatorClient;
+        this->m_bRetranslationFinishedMessage = other.m_bRetranslationFinishedMessage;
+        this->m_eTranslatorEngine = other.m_eTranslatorEngine;
         this->m_eSourceLanguage = other.m_eSourceLanguage;
         this->m_eTargetLanguage = other.m_eTargetLanguage;
         this->m_eHandleFileMode = other.m_eHandleFileMode;
@@ -53,9 +56,9 @@ void TranslationConfig::loadFromFile()
 
     QSettings configSettings(configFile,QSettings::IniFormat);
 
-    //client
-    configSettings.beginGroup("client");
-    m_eTranslatorClient = static_cast<TranslationClient>(configSettings.value("client").toInt());
+    //engine
+    configSettings.beginGroup("engine");
+    m_eTranslatorEngine = static_cast<TranslationEngine>(configSettings.value("engine").toInt());
     m_sAppID = configSettings.value("appid").toString();
     m_sAppKey = configSettings.value("appkey").toString();
     configSettings.endGroup();
@@ -71,6 +74,11 @@ void TranslationConfig::loadFromFile()
     m_eHandleFileMode = static_cast<HandleFileMode>(configSettings.value("handleMode").toInt());
     m_sNewFileSuffix = configSettings.value("newFileSuffix").toString();
     configSettings.endGroup();
+
+    //translation
+    configSettings.beginGroup("translation");
+    m_bRetranslationFinishedMessage = configSettings.value("retranslationFinishedMessage").toBool();
+    configSettings.endGroup();
 }
 
 void TranslationConfig::saveToFile()
@@ -79,9 +87,9 @@ void TranslationConfig::saveToFile()
     QString configFile  = QCoreApplication::applicationDirPath() + "/config.ini";
     QSettings configSettings(configFile,QSettings::IniFormat);
 
-    //client
-    configSettings.beginGroup("client");
-    configSettings.setValue("client",static_cast<int>(m_eTranslatorClient));
+    //engine
+    configSettings.beginGroup("engine");
+    configSettings.setValue("engine",static_cast<int>(m_eTranslatorEngine));
     configSettings.setValue("appid",m_sAppID);
     configSettings.setValue("appkey",m_sAppKey);
     configSettings.endGroup();
@@ -98,17 +106,22 @@ void TranslationConfig::saveToFile()
     configSettings.setValue("newFileSuffix",m_sNewFileSuffix);
     configSettings.endGroup();
 
+    //translation
+    configSettings.beginGroup("translation");
+    configSettings.setValue("retranslationFinishedMessage",false);
+    configSettings.endGroup();
+
     configSettings.sync();
 }
 
-void TranslationConfig::setTranslatorClient(TranslationClient client)
+void TranslationConfig::setTranslatorEngine(TranslationEngine engine)
 {
-    m_eTranslatorClient = client;
+    m_eTranslatorEngine = engine;
 }
 
-TranslationClient TranslationConfig::translatorClient() const
+TranslationEngine TranslationConfig::translatorEngine() const
 {
-    return m_eTranslatorClient;
+    return m_eTranslatorEngine;
 }
 
 void TranslationConfig::setAppID(const QString &appid)
@@ -153,7 +166,7 @@ LanguageType TranslationConfig::targetLanguage() const
 
 bool TranslationConfig::isValid()
 {
-    if(m_eTranslatorClient <= TranslationClient_eNone)
+    if(m_eTranslatorEngine <= TranslationEngine_eNone)
     {
         m_sError = QObject::tr("translator clinet is not set");
         return false;
@@ -205,14 +218,24 @@ QString TranslationConfig::newFileSuffix() const
     return m_sNewFileSuffix;
 }
 
-QStringList TranslationConfig::availableTranslationClientList()
+void TranslationConfig::setRetranslationFinishedMessage(bool b)
+{
+    m_bRetranslationFinishedMessage = b;
+}
+
+bool TranslationConfig::retranslationFinishedMessage() const
+{
+    return m_bRetranslationFinishedMessage;
+}
+
+QStringList TranslationConfig::availableTranslationEngineList()
 {
     //TODO：
-    QStringList clientList;
-    clientList.append(QObject::tr("Baidu"));
-    clientList.append(QObject::tr("Sougou"));
-    clientList.append(QObject::tr("Tengxun"));
-    return clientList;
+    QStringList engineList;
+    engineList.append(QObject::tr("Baidu"));
+    engineList.append(QObject::tr("Sougou"));
+    engineList.append(QObject::tr("Tengxun"));
+    return engineList;
 }
 
 QStringList TranslationConfig::availableTranslationLanguageList()

@@ -1,23 +1,27 @@
+#include "tsfilereader.h"
+#include "tsfilewriter.h"
 #include "tsfiletranslator.h"
 
 TsFileTranslator::TsFileTranslator(QObject *parent)
     : QObject(parent)
+    , m_bRetranslationFinished(false)
     , m_iTotolMessage(0)
     , m_cTranslator(new NetworkTranslator(this))
-    , m_cTsFileInfoPoint(Q_NULLPTR)
 {
+
     connect(m_cTranslator,SIGNAL(finished(NetworkTranslatorReply)),
             this,SLOT(slotTranslateFinished(NetworkTranslatorReply)));
 }
 
 TsFileTranslator::~TsFileTranslator()
 {
-    //    qDebug()<<Q_FUNC_INFO;
+    m_cFileInfo.clear();
+    DEBUG(Q_FUNC_INFO)
 }
 
-void TsFileTranslator::setTranslatorClient(TranslationClient client)
+void TsFileTranslator::setTranslatorEngine(TranslationEngine engine)
 {
-    m_cTranslator->setTranslatorClient(client);
+    m_cTranslator->setTranslatorEngine(engine);
 }
 
 void TsFileTranslator::setAppID(const QString &appid)
@@ -40,14 +44,19 @@ void TsFileTranslator::setTargetLanguage(LanguageType target)
     m_cTranslator->setDefaultTargetLanguage(target);
 }
 
-void TsFileTranslator::setTsFileInfo(TsFileInfo *fileInfo)
+void TsFileTranslator::setRetranslationFininshed(bool b)
 {
-    m_cTsFileInfoPoint = fileInfo;
+    m_bRetranslationFinished = b;
 }
 
-TsFileInfo * TsFileTranslator::tsFileInfo() const
+void TsFileTranslator::setFile(const QString &file)
 {
-    return m_cTsFileInfoPoint;
+    m_sFile = file;
+}
+
+QString TsFileTranslator::file() const
+{
+   return m_sFile;
 }
 
 QString TsFileTranslator::errorString() const
@@ -55,64 +64,93 @@ QString TsFileTranslator::errorString() const
     return m_sError;
 }
 
-bool TsFileTranslator::translate(TsFileInfo *fileInfo)
-{
-    m_cTsFileInfoPoint = fileInfo;
-    return translate();
-}
-
 bool TsFileTranslator::isValid()
 {
     m_sError.clear();
 
-    if(m_cTsFileInfoPoint == Q_NULLPTR){
-        m_sError = tr("ts file info is not set");
+    //配置参数
+    if(!m_cTranslator->isValid()){
+        m_sError = m_cTranslator->errorString();
         return false;
     }
 
-    if(!m_cTranslator->isValid()){
-        m_sError = m_cTranslator->errorString();
+    //文件检测
+    if(m_sFile.isEmpty()){
+        m_sError = tr("ts file is not set");
+        return false;
+    }
+
+    if(!QFile::exists(m_sFile)){
+        m_sError = tr("ts file is not exist");
+        return false;
+    }
+
+    //读取文件
+    TsFileReader fileReader;
+    if(!fileReader.read(m_sFile,m_cFileInfo)){
+        m_sError = tr("parse file error %1").arg(fileReader.errorString());
+        return false;
+    }
+
+    //文件内容检查
+    if(m_cFileInfo.contextMap.isEmpty()){
+        m_sError = tr("file translation context is empty");
         return false;
     }
 
     return true;
 }
 
+bool TsFileTranslator::isError()
+{
+    return !(m_sError.isEmpty());
+}
+
 bool TsFileTranslator::translate()
 {
+    //参数检查
     if(!isValid()){
+        emit addLog(tr("file(%1) translation error:%2").arg(m_sFile).arg(m_sError));
         emit finished();
         return false;
     }
 
-    if(m_cTsFileInfoPoint->contextMap.isEmpty()){
-        emit finished();;
-        return true;
-    }
-
-    //init task list
+    //初始化任务列表
     m_listMessage.clear();
     m_listMessage_Requesting.clear();
-    foreach(Context *item,m_cTsFileInfoPoint->contextMap.context()){
-        m_listMessage.append(item->messageList());
+    foreach(Context *item,m_cFileInfo.contextMap.context()){
+        if(m_bRetranslationFinished){
+            m_listMessage.append(item->messageList());
+        } else {
+            m_listMessage.append(item->unfinishedMessageList());
+        }
     }
+
+    //检查是否存在需要翻译的内容
+    if(m_listMessage.isEmpty()){
+        emit addLog(tr("file(%1) is no need to translate information.").arg(m_sFile));
+        m_sError = tr("no content needs translation");
+        emit finished();
+        return false;
+    }
+
     m_iTotolMessage = static_cast<quint32>(m_listMessage.count());
 
-    //translate
+    //开始翻译
     translate_impl(CONCURRENT_TRANSLATION_MESSAGE_MAX);
     return true;
 }
 
 void TsFileTranslator::translate_impl(int translateCount)
 {
-    if(m_listMessage.isEmpty())
+    if(m_listMessage.isEmpty() || translateCount < 1)
         return ;
 
     int realCount = translateCount > m_listMessage.count() ? \
                 m_listMessage.count() : translateCount;
 
     for(int i = 0; i < realCount; ++i){
-        Message *requestMessage = m_listMessage.takeFirst();
+        Message *requestMessage = m_listMessage.takeFirst();//移除
         if(requestMessage->source().simplified().isEmpty()){
             continue;
         }
@@ -123,7 +161,7 @@ void TsFileTranslator::translate_impl(int translateCount)
 
 void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply)
 {
-    //find message
+    //查询相应信息
     Message *message = Q_NULLPTR;
     foreach(Message *item,m_listMessage_Requesting){
         if(item->source().simplified() == reply.source().simplified()){
@@ -132,27 +170,26 @@ void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply
         }
     }
 
-    //check
     if(message == Q_NULLPTR){
         return;
     }
 
-    //remove the message
+    //移除缓存信息
     m_listMessage_Requesting.removeOne(message);
 
+    //解析结果
     if(reply.error() != NetworkTranslatorReply::TranslationError_eNone){
-
         qint8 failCount = m_hashFailRecord.value(message,0) + 1;
         if(failCount > TRANSLATION_MESSAGE_MAX_TRY_COUNT){
-            //remove the failure record and do not attempt translation
+            //当前信息超出可尝试的最大次数,移除相应的记录,并不在尝试
             m_hashFailRecord.remove(message);
         }else{
-            //append to task,retry
+            //重新添加到翻译列表,并设置失败信息
             m_listMessage.append(message);
             m_hashFailRecord.insert(message,failCount);
         }
 
-        emit sigAddLog(tr("translate (%1) fail:%2,fail count:%3 %4")\
+        emit addLog(tr("translation (%1) fail:%2,failcount:%3 %4")\
                        .arg(reply.source())\
                        .arg(reply.errorString())\
                        .arg(failCount)
@@ -163,12 +200,17 @@ void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply
         message->setTranslation(reply.target());
         m_hashFailRecord.remove(message);
         updateProgress();
-        emit sigAddLog(tr("translate (%1) success!").arg(reply.source()));
+        emit addLog(tr("translation (%1) success!").arg(reply.source()));
     }
 
-    //continue translation
+    //如果还有则继续翻译,否则翻译结束
     if(!m_listMessage.isEmpty()){
         translate_impl(1);
+    }else{
+        if(m_listMessage_Requesting.isEmpty()){
+            saveFile();
+            emit finished();
+        }
     }
 }
 
@@ -177,7 +219,10 @@ void TsFileTranslator::updateProgress()
     quint32 iFinished =  m_iTotolMessage - static_cast<unsigned int>(m_listMessage.count()) \
             - static_cast<unsigned int>(m_listMessage_Requesting.count());
     emit translationProgress(iFinished,m_iTotolMessage);
-    if(iFinished == m_iTotolMessage){
-        emit finished();
-    }
+}
+
+bool TsFileTranslator::saveFile()
+{
+    TsFileWriter writer;
+    return writer.write(m_sFile + ".tmp",m_cFileInfo);
 }

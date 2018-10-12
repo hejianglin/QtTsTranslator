@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     xmlsyntaxhighlighter.cpp \
     tsfileviewer.cpp \
     translationconfigdialog.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    tstranslatorutils.cpp
 
 HEADERS  += mainwindow.h \
     tstranslator_global.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     xmlsyntaxhighlighter.h \
     tsfileviewer.h \
     translationconfigdialog.h \
-    codeeditor.h
+    codeeditor.h \
+    tstranslatorutils.h
 
 # QNetworkTranslator
 INCLUDEPATH += ../../QNetworkTranslator/src/

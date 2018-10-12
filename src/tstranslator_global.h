@@ -30,6 +30,4 @@ enum LogType
 
 
 
-
-
 #endif // TSTRANSLATOR_GLOBAL_H

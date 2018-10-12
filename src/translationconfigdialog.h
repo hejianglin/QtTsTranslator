@@ -31,15 +31,15 @@ private slots:
     void slotSave();
 
 private:
-    //client
-    QGroupBox *m_gboxClient;
-    QLabel *m_lblClient;
-    QComboBox *m_cboxClient;
+    //engine
+    QGroupBox *m_gboxEngine;
+    QLabel *m_lblEngine;
+    QComboBox *m_cboxEngine;
     QLabel *m_lblAppID;
     QLineEdit *m_edtAppID;
     QLabel *m_lblAppKey;
     QLineEdit *m_edtAppKey;
-    QGridLayout *m_layoutClient;
+    QGridLayout *m_layoutEngine;
 
     //language
     QGroupBox *m_gboxLanguage;
@@ -52,13 +52,16 @@ private:
     //file
     QGroupBox *m_gboxFile;
     QRadioButton *m_rboxNewFile;
-    QLabel *m_lblNewFileSuffix;
     QLineEdit *m_edtNewFileSuffix;
-    QFrame *m_frmNewFile;
-    QHBoxLayout *m_layoutNewFile;
     QRadioButton *m_rboxReplaceFile;
     QGridLayout *m_layoutFile;
 
+    //translation
+    QGroupBox *m_gboxTransaltion;
+    QCheckBox *m_chboxRetranslationFinished;
+    QGridLayout *m_layoutTranslation;
+
+    //toolbutton
     QPushButton *m_btnSave;
     QPushButton *m_btnCancel;
     QHBoxLayout *m_layoutTool;
@@ -71,9 +74,10 @@ private:
     TranslationConfig *m_cTranslationConfig;
 
     void initGui();
-    void initClient();
+    void initEngine();
     void initLanguage();
     void initFile();
+    void initTranslation();
     void initTool();
     void setMainLayout();
 

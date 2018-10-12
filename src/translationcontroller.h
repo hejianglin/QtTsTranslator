@@ -32,13 +32,13 @@ public slots:
 signals:
     void translationProgress(qreal);
     void finished();
-    void finished(const QString &file,bool bSuc);
+    void finishedAFile(const QString &file,bool bSuc);
 
-    void sigAddLog(const QString &log,LogType logType = LogType_eInfo);
+    void addLog(const QString &log,LogType logType = LogType_eInfo);
 
 private slots:
     void slotTranslationProgress(quint32,quint32);
-    void slotFinished();
+    void slotFinishedAFile();
 private:
     //data
     struct ProgressInfo
@@ -58,9 +58,9 @@ private:
     };
     TranslationConfig m_cTranslationConfig;
 
-    quint16 m_iIndex;
     QString m_sError;
     QStringList m_slFile;
+    QStringList m_slFile_Translating;
     QHash<QString,ProgressInfo *>m_hashProgressInfo;
 
     //function

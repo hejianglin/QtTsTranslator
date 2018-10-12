@@ -19,19 +19,20 @@ TranslationConfigDialog::TranslationConfigDialog(TranslationConfig *config,QWidg
 
 void TranslationConfigDialog::initGui()
 {
-    initClient();
+    initEngine();
     initLanguage();
     initFile();
+    initTranslation();
     initTool();
     setMainLayout();
     setWindowFlags(Qt::Dialog | Qt::WindowCloseButtonHint);
 }
 
-void TranslationConfigDialog::initClient()
+void TranslationConfigDialog::initEngine()
 {
-    m_lblClient = new QLabel(this);
-    m_lblClient->setText(tr("Client:"));
-    m_cboxClient = new QComboBox(this);
+    m_lblEngine = new QLabel(this);
+    m_lblEngine->setText(tr("Engine:"));
+    m_cboxEngine = new QComboBox(this);
 
     m_lblAppID = new QLabel(this);
     m_lblAppID->setText(tr("AppID:"));
@@ -41,24 +42,24 @@ void TranslationConfigDialog::initClient()
     m_lblAppKey->setText(tr("AppKey:"));
     m_edtAppKey = new QLineEdit(this);
 
-    m_gboxClient = new QGroupBox(this);
-    m_gboxClient->setTitle(tr("Translation Client Settings"));
+    m_gboxEngine = new QGroupBox(this);
+    m_gboxEngine->setTitle(tr("Engine"));
 
-    m_layoutClient = new QGridLayout(m_gboxClient);
+    m_layoutEngine = new QGridLayout(m_gboxEngine);
 
     int row = 0;
-    m_layoutClient->addWidget(m_lblClient,row,0,1,1);
-    m_layoutClient->addWidget(m_cboxClient,row,1,1,2);
+    m_layoutEngine->addWidget(m_lblEngine,row,0,1,1);
+    m_layoutEngine->addWidget(m_cboxEngine,row,1,1,2);
 
     row++;
-    m_layoutClient->addWidget(m_lblAppID,row,0,1,1);
-    m_layoutClient->addWidget(m_edtAppID,row,1,1,2);
+    m_layoutEngine->addWidget(m_lblAppID,row,0,1,1);
+    m_layoutEngine->addWidget(m_edtAppID,row,1,1,2);
 
     row++;
-    m_layoutClient->addWidget(m_lblAppKey,row,0,1,1);
-    m_layoutClient->addWidget(m_edtAppKey,row,1,1,2);
+    m_layoutEngine->addWidget(m_lblAppKey,row,0,1,1);
+    m_layoutEngine->addWidget(m_edtAppKey,row,1,1,2);
 
-    m_gboxClient->setLayout(m_layoutClient);
+    m_gboxEngine->setLayout(m_layoutEngine);
 }
 
 void TranslationConfigDialog::initLanguage()
@@ -72,7 +73,7 @@ void TranslationConfigDialog::initLanguage()
     m_cboxTargetLanguage = new QComboBox(this);
 
     m_gboxLanguage = new QGroupBox(this);
-    m_gboxLanguage->setTitle("Language Settings");
+    m_gboxLanguage->setTitle("Language");
 
     m_layoutLanguage = new QGridLayout(m_gboxLanguage);
 
@@ -89,34 +90,40 @@ void TranslationConfigDialog::initLanguage()
 void TranslationConfigDialog::initFile()
 {
     m_rboxNewFile = new QRadioButton(this);
-    m_rboxNewFile->setText(tr("New File"));
+    m_rboxNewFile->setText(tr("New same name file but different suffix:"));
 
-    m_lblNewFileSuffix = new QLabel(this);
-    m_lblNewFileSuffix->setText(tr("Suffix:"));
     m_edtNewFileSuffix = new QLineEdit(this);
     m_edtNewFileSuffix->setMaxLength(10);
-    m_frmNewFile = new QFrame(this);
-    m_layoutNewFile = new QHBoxLayout(m_frmNewFile);
-    m_layoutNewFile->setContentsMargins(0,0,0,0);
-    m_layoutNewFile->addWidget(m_lblNewFileSuffix);
-    m_layoutNewFile->addWidget(m_edtNewFileSuffix);
-    m_frmNewFile->setLayout(m_layoutNewFile);
 
-    connect(m_rboxNewFile,SIGNAL(toggled(bool)),m_frmNewFile,SLOT(setVisible(bool)));
+    connect(m_rboxNewFile,SIGNAL(toggled(bool)),m_edtNewFileSuffix,SLOT(setEnabled(bool)));
 
     m_rboxReplaceFile = new QRadioButton(this);
     m_rboxReplaceFile->setText(tr("Replace File"));
 
     m_gboxFile = new QGroupBox(this);
-    m_gboxFile->setTitle(tr("Translation File Settings"));
+    m_gboxFile->setTitle(tr("File ( How to save translation result )"));
 
     m_layoutFile = new QGridLayout(m_gboxFile);
     int row = 0;
     m_layoutFile->addWidget(m_rboxNewFile,row,0,1,1);
-    m_layoutFile->addWidget(m_frmNewFile,row,1,1,1);
+    m_layoutFile->addWidget(m_edtNewFileSuffix,row,1,1,1);
     m_layoutFile->addWidget(m_rboxReplaceFile,++row,0,1,2);
 
     m_gboxFile->setLayout(m_layoutFile);
+}
+
+void TranslationConfigDialog::initTranslation()
+{
+    m_chboxRetranslationFinished = new QCheckBox(this);
+    m_chboxRetranslationFinished->setText(tr("Retranslation finished message"));
+
+    m_gboxTransaltion = new QGroupBox(this);
+    m_gboxTransaltion->setTitle(tr("Translation"));
+
+    m_layoutTranslation = new QGridLayout(m_gboxTransaltion);
+    m_layoutTranslation->addWidget(m_chboxRetranslationFinished,0,0,1,1);
+
+    m_gboxTransaltion->setLayout(m_layoutTranslation);
 }
 
 void TranslationConfigDialog::initTool()
@@ -142,11 +149,13 @@ void TranslationConfigDialog::setMainLayout()
     m_layoutMain = new QVBoxLayout(this);
     m_layoutMain->setContentsMargins(5,5,5,5);
     m_layoutMain->addSpacing(5);
-    m_layoutMain->addWidget(m_gboxClient);
+    m_layoutMain->addWidget(m_gboxEngine);
     m_layoutMain->addSpacing(5);
     m_layoutMain->addWidget(m_gboxLanguage);
     m_layoutMain->addSpacing(5);
     m_layoutMain->addWidget(m_gboxFile);
+    m_layoutMain->addSpacing(5);
+    m_layoutMain->addWidget(m_gboxTransaltion);
     m_layoutMain->addSpacing(5);
     m_layoutMain->addLayout(m_layoutTool);
     this->setLayout(m_layoutMain);
@@ -154,8 +163,8 @@ void TranslationConfigDialog::setMainLayout()
 
 void TranslationConfigDialog::showEvent(QShowEvent *)
 {
-    //init client list
-    m_cboxClient->addItems(m_cTranslationConfig->availableTranslationClientList());
+    //init engine list
+    m_cboxEngine->addItems(m_cTranslationConfig->availableTranslationEngineList());
 
     //init language list
     QStringList slLanguageList = m_cTranslationConfig->availableTranslationLanguageList();
@@ -168,14 +177,14 @@ void TranslationConfigDialog::showEvent(QShowEvent *)
     loadConfig();
 
     this->move((QApplication::desktop()->width() - this->width())/2,
-                 (QApplication::desktop()->height() - this->height())/2);
+               (QApplication::desktop()->height() - this->height())/2);
 }
 
 
 void TranslationConfigDialog::loadConfig()
 {
-    //client
-    m_cboxClient->setCurrentIndex(static_cast<int>(m_cTranslationConfig->translatorClient()));
+    //engine
+    m_cboxEngine->setCurrentIndex(static_cast<int>(m_cTranslationConfig->translatorEngine()));
     m_edtAppID->setText(m_cTranslationConfig->appID());
     m_edtAppKey->setText(m_cTranslationConfig->appKey());
 
@@ -189,6 +198,10 @@ void TranslationConfigDialog::loadConfig()
     m_rboxNewFile->setChecked(m_cTranslationConfig->handleFileMode() == TranslationConfig::HandleFileMode_eNew);
     m_rboxReplaceFile->setChecked(!m_rboxNewFile->isChecked());
     m_edtNewFileSuffix->setText(m_cTranslationConfig->newFileSuffix());
+
+    //translation
+    m_chboxRetranslationFinished->setCheckState(m_cTranslationConfig->retranslationFinishedMessage() ?
+                                                    Qt::Checked : Qt::Unchecked);
 }
 
 void TranslationConfigDialog::slotSave()
@@ -198,8 +211,8 @@ void TranslationConfigDialog::slotSave()
         return ;
     }
 
-    //client
-    m_cTranslationConfig->setTranslatorClient(static_cast<TranslationClient>(m_cboxClient->currentIndex()));
+    //engine
+    m_cTranslationConfig->setTranslatorEngine(static_cast<TranslationEngine>(m_cboxEngine->currentIndex()));
     m_cTranslationConfig->setAppID(m_edtAppID->text());
     m_cTranslationConfig->setAppKey(m_edtAppKey->text());
 
@@ -210,10 +223,12 @@ void TranslationConfigDialog::slotSave()
     //file
     m_cTranslationConfig->setHandleFileMode(m_rboxNewFile->isChecked() ? TranslationConfig::HandleFileMode_eNew \
                                                                        : TranslationConfig::HandleFileMode_eReplace);
-
     if(m_rboxNewFile->isChecked()){
         m_cTranslationConfig->setNewFileSuffix(m_edtNewFileSuffix->text());
     }
+
+    //translation
+    m_cTranslationConfig->setRetranslationFinishedMessage(m_chboxRetranslationFinished->isChecked());
 
     m_cTranslationConfig->saveToFile();
     QMessageBox::information(this,tr("Success"),tr("Save Translation Config Successful!"));
@@ -222,7 +237,7 @@ void TranslationConfigDialog::slotSave()
 
 bool TranslationConfigDialog::isValid()
 {
-    //client
+    //engine
     if(m_edtAppID->text().isEmpty()){
         m_sError = tr("appid is not set");
         return false;

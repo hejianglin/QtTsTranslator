@@ -3,11 +3,13 @@
 
 //Qt
 #include <QMainWindow>
+#include <QProgressDialog>
 
 //QtTsTranslator
 #include "tsfileviewer.h"
 #include "translationconfig.h"
 #include "translationcontroller.h"
+#include "tstranslator_global.h"
 
 class QAction;
 
@@ -21,13 +23,18 @@ public:
 
 private:
     //Data
+    QString m_sLogDir;
+
     QAction *m_actOpenFile;
     QAction *m_actOpenDir;
+    QAction *m_actSettings;
 
     QLabel *m_lblTips;
     QLabel *m_lblProgress;
     QAction *m_actStart;
     QAction *m_actPause;
+
+    QProgressDialog *m_proDlgWaiting;
 
     QStringList m_slSourceFile;
     QStringList m_slTargetFile;
@@ -45,6 +52,9 @@ private:
     void updateTargetFileList();
     void updateFileViewer();
 
+    void enterBusyMode();
+    void quitBusyMode();
+
 private slots:
     void slotOpenFile();
     void slotOpenDir();
@@ -54,8 +64,10 @@ private slots:
     void slotAbout();
 
     void slotTranslationFinished();
-    void slotTranslationFinished(const QString &,bool);
+    void slotTranslationAFileFinished(const QString &,bool);
     void slotTranslationProgress(qreal);
+
+    void slotAddLog(const QString &log,LogType type);
 };
 
 #endif // MAINWINDOW_H

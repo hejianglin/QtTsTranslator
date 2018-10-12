@@ -50,6 +50,17 @@ MessageList Context::messageList() const
     return m_lMessage;
 }
 
+MessageList Context::unfinishedMessageList() const
+{
+    MessageList unfinishedMessageList;
+    foreach(Message *item,m_lMessage){
+        if(item->type() == Message::Type_eUnfinished){
+            unfinishedMessageList.append(item);
+        }
+    }
+    return unfinishedMessageList;
+}
+
 //////////////////////////////////////////////////////////
 /// ContextMap
 ContextMap::ContextMap()
