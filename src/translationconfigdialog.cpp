@@ -73,7 +73,7 @@ void TranslationConfigDialog::initLanguage()
     m_cboxTargetLanguage = new QComboBox(this);
 
     m_gboxLanguage = new QGroupBox(this);
-    m_gboxLanguage->setTitle("Language");
+    m_gboxLanguage->setTitle(tr("Language"));
 
     m_layoutLanguage = new QGridLayout(m_gboxLanguage);
 
