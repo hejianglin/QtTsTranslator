@@ -231,11 +231,12 @@ void MainWindow::slotStart()
 {
     m_cTranslationController->setTranslationConfig(m_cTranslationConfig);
     m_cTranslationController->setFile(m_slSourceFile);
+    enterBusyMode();
     if(!m_cTranslationController->translate()){
         QMessageBox::critical(this,tr("Translation Error"),m_cTranslationController->errorString());
+        quitBusyMode();
         return ;
     }
-    enterBusyMode();
 }
 
 void MainWindow::slotPause()
@@ -248,6 +249,8 @@ void MainWindow::slotTranslationFinished()
     m_lblTips->setText(tr("Ready"));
     m_lblProgress->setText(tr(""));
     quitBusyMode();
+
+    QMessageBox::information(this,tr("info"),tr("translation finished!"));
 }
 
 void MainWindow::slotTranslationProgress(qreal progress)
@@ -285,11 +288,11 @@ void MainWindow::enterBusyMode()
     this->setCursor(Qt::WaitCursor);
     this->repaint();
 
-    TsTranslatorUtils::delay(300);
+    TsTranslatorUtils::delay(200);
 }
 
 void MainWindow::quitBusyMode()
-{
+{    
     m_actOpenFile->setEnabled(true);
     m_actStart->setEnabled(true);
     m_actSettings->setEnabled(true);
@@ -319,7 +322,7 @@ void MainWindow::slotAddLog(const QString &log, LogType type)
         return ;
     }
 
-    QString sLog = QString("[%1][%2]%3\r\n")
+    QString sLog = QString("[%1] [%2] %3\r\n")
             .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))
             .arg(slLogType.value(static_cast<int>(type)))
             .arg(log);

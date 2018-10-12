@@ -176,7 +176,7 @@ void TranslationController::slotFinishedAFile()
         QFile::rename(translator->file() + ".tmp",sNewFile);
     }
 
-    emit finishedAFile(translator->file(),translator->isError());
+    emit finishedAFile(translator->file(),!translator->isError());
 
     //检查翻译是否完成
     if(!m_slFile.isEmpty()){

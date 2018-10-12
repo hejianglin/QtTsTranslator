@@ -205,6 +205,7 @@ void TsFileTranslator::slotTranslateFinished(const NetworkTranslatorReply &reply
 
     //如果还有则继续翻译,否则翻译结束
     if(!m_listMessage.isEmpty()){
+        //保存??
         translate_impl(1);
     }else{
         if(m_listMessage_Requesting.isEmpty()){
