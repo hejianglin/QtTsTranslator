@@ -159,7 +159,6 @@ void MainWindow::slotOpenFile()
 
     enterBusyMode();
 
-    //刷新
     m_slSourceFile.clear();
     m_slSourceFile.append(fileName);
     updateTargetFileList();
